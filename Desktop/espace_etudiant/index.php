@@ -19,3 +19,4 @@ if (isset($_SESSION['user_id'])) {
 // Sinon, rediriger vers la page de connexion
 header('Location: pages/auth/login.php');
 exit();
+

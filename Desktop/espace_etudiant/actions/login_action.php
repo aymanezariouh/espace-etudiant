@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Action: Connexion
  * Traite le formulaire de connexion
@@ -43,11 +44,18 @@ if (!Security::validateEmail($email)) {
 $user = new User();
 $result = $user->login($email, $password);
 
+// var_dump($result);
+
 if ($result) {
     // Rediriger selon le rôle
     if ($_SESSION['user_role'] === 'enseignant') {
         header('Location: ../pages/teacher/dashboard.php');
     } else {
+        $_SESSION['user_id'] = $result['id'];
+        $_SESSION['name']    = $result['name'];
+        $_SESSION['email']   = $result['email'];
+        $_SESSION['role']    = $result['role'];
+        $_SESSION['test']    = "test";
         header('Location: /pages/etudiant/dashboaard-etudiant.php');
     }
     exit();

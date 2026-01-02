@@ -11,6 +11,16 @@ class Question {
         $this->db = Database::getInstance();
     }
     
+    public function saveAnswer($user_id, $quiz_id, $question_id, $answer)
+{
+
+    $sql = "INSERT INTO quiz_answers (user_id, quiz_id, question_id, answer)
+            VALUES (?, ?, ?, ?)";
+
+    return $this -> db->query($sql, [$user_id, $quiz_id, $question_id, $answer]);
+}
+
+
     // Crée une nouvelle question
   
     public function create($quizId, $question, $option1, $option2, $option3, $option4, $correctOption) {

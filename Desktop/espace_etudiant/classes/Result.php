@@ -9,6 +9,7 @@
 class Result {
     private $db;
     
+    
     public function __construct() {
         $this->db = Database::getInstance();
     }
@@ -19,13 +20,19 @@ class Result {
      * @return array - Liste des résultats
      */
     public function getMyResults($etudiantId) {
-        $sql = "SELECT r.*, q.titre as quiz_titre, c.nom as categorie_nom
-                FROM results r
-                LEFT JOIN quiz q ON r.quiz_id = q.id
-                LEFT JOIN categories c ON q.categorie_id = c.id
-                WHERE r.etudiant_id = ?
-                ORDER BY r.created_at DESC";
-        
+        $sql = "
+    SELECT 
+        r.*, 
+        q.titre AS quiz_titre, 
+        q.description AS quiz_description,
+        c.nom AS categorie_nom
+    FROM results r
+    LEFT JOIN quiz q ON r.quiz_id = q.id
+    LEFT JOIN categories c ON q.categorie_id = c.id
+    WHERE r.etudiant_id = ?
+    ORDER BY r.created_at DESC
+";
+
         $result = $this->db->query($sql, [$etudiantId]);
         return $result->fetchAll();
     }

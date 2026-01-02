@@ -11,7 +11,6 @@ class Category {
         $this->db = Database::getInstance();
     }
     
-   
     public function create($nom, $description, $createdBy) {
         if (empty($nom) || empty($createdBy)) {
             return false;

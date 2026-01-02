@@ -23,7 +23,6 @@ session_set_cookie_params(1800);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
 // Régénération de l'ID de session pour prévenir le session hijacking
 if (!isset($_SESSION['initiated'])) {
     session_regenerate_id(true);

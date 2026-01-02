@@ -1,28 +1,61 @@
 <?php
+
+
+
 require_once '../../config/database.php';
 require_once '../../classes/Database.php';
 require_once '../../classes/Security.php';
 require_once '../../classes/Category.php';
 require_once '../../classes/Quiz.php';
+require_once '../../classes/Result.php';
+
+
+if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+    header('Location: ../auth/login.php'); 
+    exit();
+}
+
 $DB = Database::getInstance();
+$etudiantId = $_SESSION['user_id'];
+$category_id = $_GET['category_id'] ?? null;
+$res= new Result();
+$results = $res->getMyResults($etudiantId);
+$quiz_req= new Quiz();
+$quizes = [];
+if($category_id !== null){
+    $quizes =$quiz_req ->affichagebyCateg($category_id);
+}
+$quiz_req= new Quiz();
+$id_qu = $_GET['id'] ?? null;
 
-$categ_req = $DB->query("SELECT * FROM  categories");
-$Categories= $categ_req -> fetchAll();
+$categ = new Category();
+$Categories = $categ->getAll();
 
-$quiz_req = $DB->query("SELECT * FROM quiz where is_active = 1");
-$quizes = $quiz_req-> fetchAll();
 
-$resul_req = $DB-> query(" SELECT quiz.titre, results.score, results.total_questions , results.created_at FROM results INNER JOIN quiz on results.quiz_id = quiz.id");
-$results = $resul_req ->fetchAll();
-echo "<pre>";
-var_dump($_SESSION);
-echo "</pre>";
-// $teacherId = $_SESSION['user_id'];
+
+
+// $categ_req = $DB->query("SELECT * FROM  categories");
+// $Categories= $categ_req -> fetchAll();
+
+// $quiz_req = $DB->query("SELECT * FROM quiz where is_active = 1");
+// $quizes = $quiz_req-> fetchAll();
+
+// $resul_req = $DB-> query(" SELECT quiz.titre, results.score, results.total_questions ,
+// results.created_at FROM results INNER JOIN quiz on results.quiz_id = quiz.id");
+// $results = $resul_req ->fetchAll();
+
+///////////////////
+//
+////
+///////
+
+
 // $userName = $_SESSION['user_role'];
 
 // var_dump($teacherId);
 // var_dump($userName);
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -176,48 +209,66 @@ echo "</pre>";
   <nav class="sidebar">
     <h2>Étudiant</h2>
     <a href="#" class="active">Dashboard</a>
-    <a href="#">Catégories</a>
-    <a href="#">Quiz</a>
-    <a href="#">Historique</a>
-    <a href="#">Déconnexion</a>
+    
+    <a href="../../actions/logout.php">Déconnexion</a>
   </nav>
 
   <!-- Contenu principal -->
   <main class="main">
 
     <!-- En-tête -->
-    <div class="header">
-      <h1>Dashboard Étudiant</h1>
+    <div class="header"><div>
+      <h1>Dashboard de <?= $_SESSION['user_nom'] ?></h1>
+      <h4><?=  $_SESSION['user_email'] ?></h4>
+      </div>
       <div class="student-info">
       </div>
     </div>
     <!-- Catégories (US1) -->
-    <section class="section">
-      <h2>Catégories de Quiz</h2>
-    <?php foreach($Categories as $categori)?>
+     <?php if ($category_id === null): ?>
+<section class="section">
+  <h2>Catégories de Quiz</h2>
 
-      <div class="category">
-        <strong>
-            <?= $categori['nom']; ?></strong><br>
-        <?= $categori['description']; ?>
-      </div>
-      
-    </section>
+  <?php foreach ($Categories as $categori): ?>
+    <div class="category">
+      <a href="?category_id=<?= $categori['id'] ?>">
+        <strong><?= $categori['nom'] ?></strong>
+      </a><br>
+      <?= $categori['description'] ?>
+    </div>
+  <?php endforeach; ?>
+</section>
+<?php endif; ?>
 
-    <!-- Quiz actifs par catégorie (US2) -->
-    <section class="section">
-      <h2>Quiz Disponibles</h2>
+<!-- Quiz actifs par catégorie (US2) -->
+ <?php if ($category_id !== null): ?>
+<section class="section">
+  <h2>Quiz Disponibles</h2>
 
+  <?php if (!empty($quizes)): ?>
+    <?php foreach ($quizes as $quiz): ?>
       <div class="quiz">
-        <?php foreach($quizes as $quiz)?>
         <div>
-          <strong><?= $quiz['titre']?></strong><br>
-          <small><?= $quiz['description']?></small>
+          <strong><?= $quiz['titre'] ?></strong><br>
+          <small><?= $quiz['description'] ?></small>
         </div>
-        <a href="#">Démarrer</a>
-      </div>
 
-    </section>
+        <a href="quiz_pass.php?quiz_id=<?= $quiz['id'] ?>">
+          Démarrer
+        </a>
+      </div>
+    <?php endforeach; ?>
+  <?php else: ?>
+    <p>Aucun quiz pour cette catégorie.</p>
+  <?php endif; ?>
+
+  <br>
+  <a href="dashboaard-etudiant.php">← Retour aux catégories</a>
+</section>
+<?php endif; ?>
+
+
+
 
     <!-- Historique personnel (US5) -->
     <section class="section">
@@ -235,7 +286,7 @@ echo "</pre>";
         <tbody>
             <?php foreach($results AS $result) {?>
           <tr>
-            <td><?= $result['titre'] ?></td>
+            <td><?= $result['quiz_titre'] ?></td>
             <td><?= $result['score'] ?></td>
             <td><?= $result['total_questions'] ?></td>
             <td><?= $result['created_at'] ?></td>
